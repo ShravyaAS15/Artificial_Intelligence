@@ -1,0 +1,112 @@
+import heapq
+
+def get_state(name):
+    print(f"Enter {name} row by row (use 0 for blank):")
+    state = []
+    for i in range(3):
+        row = list(map(int, input().split()))
+        state.append(tuple(row))
+    return tuple(state)
+
+
+def misplaced_tiles(state, goal):
+    return sum(
+        state[i][j] != 0 and state[i][j] != goal[i][j]
+        for i in range(3) for j in range(3)
+    )
+
+def manhattan_distance(state, goal):
+    positions = {
+        goal[i][j]: (i, j)
+        for i in range(3) for j in range(3)
+    }
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            tile = state[i][j]
+            if tile != 0:
+                x, y = positions[tile]
+                distance += abs(i - x) + abs(j - y)
+    return distance
+
+
+def get_neighbors(state):
+    board = [list(row) for row in state]
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == 0:
+                r, c = i, j
+                break
+        else:
+            continue
+        break
+    neighbors = []
+    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        nr, nc = r + dr, c + dc
+
+        if 0 <= nr < 3 and 0 <= nc < 3:
+            new_board = [row[:] for row in board]
+            new_board[r][c], new_board[nr][nc] = (
+                new_board[nr][nc], new_board[r][c]
+            )
+            neighbors.append(tuple(tuple(row) for row in new_board))
+
+    return neighbors
+
+
+def astar(start, goal, heuristic):
+    pq = [(heuristic(start, goal), 0, start)]
+    costs = {start: 0}
+    parent = {start: None}
+
+    while pq:
+        f, g, current = heapq.heappop(pq)
+
+        if g != costs[current]:
+            continue
+
+        if current == goal:
+            path = []
+            while current is not None:
+                path.append(current)
+                current = parent[current]
+            return path[::-1]
+
+        for neighbor in get_neighbors(current):
+            new_g = g + 1
+
+            if new_g < costs.get(neighbor, float("inf")):
+                costs[neighbor] = new_g
+                parent[neighbor] = current
+                h = heuristic(neighbor, goal)
+                heapq.heappush(pq, (new_g + h, new_g, neighbor))
+
+    return None
+
+def display(path):
+    if path is None:
+        print("No solution found.")
+        return
+
+    for step, state in enumerate(path):
+        print(f"\nStep {step}:")
+        for row in state:
+            print(*row)
+
+    print("\nTotal moves:", len(path) - 1)
+
+
+start = get_state("INITIAL STATE")
+goal = get_state("GOAL STATE")
+print("\nChoose heuristic:")
+print("1. Misplaced Tiles")
+print("2. Manhattan Distance")
+choice = input("Enter choice: ")
+if choice == "1":    
+    heuristic = misplaced_tiles
+elif choice == "2":
+    heuristic = manhattan_distance
+else:   
+    print("Invalid choice")
+    raise SystemExit
+display(astar(start, goal, heuristic))
