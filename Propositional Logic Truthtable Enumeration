@@ -1,0 +1,56 @@
+from itertools import product
+
+def implies(a, b):
+    return (not a) or b
+
+def KB(P, Q, R):
+    return (implies(Q, P) and
+            implies(P, not Q) and
+            (Q or R))
+
+def query1(P, Q, R):
+    return R
+
+def query2(P, Q, R):
+    return implies(R, P)
+
+def query3(P, Q, R):
+    return implies(Q, R)
+
+
+models = list(product([False, True], repeat=3))
+
+print("P  Q  R |  KB  |  R  |  R->P  |  Q->R ")
+print("--------------------------------")
+
+kb_models = []
+
+for P, Q, R in models:
+
+    kb = KB(P, Q, R)
+
+    q1 = query1(P, Q, R)
+    q2 = query2(P, Q, R)
+    q3 = query3(P, Q, R)
+
+    print(P, Q, R, "|", kb, "|",
+          q1, "|", q2, "|", q3)
+
+    if kb:
+        kb_models.append((P, Q, R))
+
+print("\nModels of KB:")
+for model in kb_models:
+    print(model)
+
+def entails(query):
+    for P, Q, R in kb_models:
+        if not query(P, Q, R):
+            return False
+    return True
+
+print("\nEntailment Results:")
+
+print("KB entails R:", entails(query1))
+print("KB entails R -> P:", entails(query2))
+print("KB entails Q -> R:", entails(query3))
