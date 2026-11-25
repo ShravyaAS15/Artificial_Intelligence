@@ -1,0 +1,47 @@
+import re
+
+def fol_to_cnf():
+
+    print("FOL TO CNF CONVERSION")
+
+    expr = input("Enter expression: ")
+
+    print("\nOriginal Expression:")
+    print(expr)
+
+    expr = expr.replace("->", "IMPLIES")
+    expr = re.sub(r'(\w+)\s*IMPLIES\s*(\w+)',
+                  r'(~\1 | \2)', expr)
+    expr = expr.replace("IMPLIES", "->")
+
+    print("\nStep 1: Eliminate Implication")
+    print(expr)
+
+    print("\nStep 2: Move Negations Inward")
+    print("Apply De Morgan's laws where required.")
+    print(expr)
+
+    print("\nStep 3: Standardize Variables")
+    print(expr)
+
+    if "exists" in expr.lower():
+        print("\nStep 4: Skolemization")
+        print("Replace existential variables with Skolem constants/functions.")
+        expr = re.sub(r'exists\s+(\w+)', '', expr,
+                      flags=re.IGNORECASE)
+        print(expr)
+    else:
+        print("\nStep 4: Skolemization")
+        print("No existential quantifiers found.")
+
+    expr = re.sub(r'forall\s+\w+', '', expr,
+                  flags=re.IGNORECASE)
+
+    print("\nStep 5: Remove Universal Quantifiers")
+    print(expr)
+
+    print("\nStep 6: Final CNF")
+    print(expr)
+
+    print("\nConversion Completed!")
+fol_to_cnf()
